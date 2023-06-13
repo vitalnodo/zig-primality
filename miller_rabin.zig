@@ -18,9 +18,6 @@ pub fn isMillerRabinPassed(
     number: T,
     accuracy: usize,
 ) bool {
-    if (!checkFirstPrimes(number)) {
-        return false;
-    }
     var even_component: T = number - 1;
     var max_division_by_two: T = 0;
     while (even_component % 2 == 0) {
