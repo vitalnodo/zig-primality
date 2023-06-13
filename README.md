@@ -2,6 +2,7 @@
 Checking whether a number is probably prime and generating a probably 
 prime number. Now implemented:
 * Miller-Rabin test
+* Fermat test
 
 There is also an implementation of modular exponentiation.
 
