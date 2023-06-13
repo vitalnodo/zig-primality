@@ -1,16 +1,10 @@
 const std = @import("std");
 const testing = std.testing;
 const Random = std.rand.Random;
-const powMod = @import("utils.zig").powMod;
-const checkFirstPrimes = @import("utils.zig").checkFirstPrimes;
-
-fn getLowLevelPrime(random: Random, comptime T: type) T {
-    var candidate = random.int(T);
-    while (!checkFirstPrimes(candidate)) {
-        candidate = random.int(T);
-    }
-    return candidate;
-}
+const utils = @import("utils.zig");
+const powMod = utils.powMod;
+const checkFirstPrimes = utils.checkFirstPrimes;
+const getLowLevelPrime = utils.getLowLevelPrime;
 
 pub fn isMillerRabinPassed(
     random: Random,
@@ -26,13 +20,7 @@ pub fn isMillerRabinPassed(
     }
     for (0..accuracy) |_| {
         // var a = random.intRangeAtMost(T, 2, number - 1);
-        var a = blk: {
-            var a = random.int(T);
-            while (a < 2 or a > number - 1) {
-                a = random.int(T);
-            }
-            break :blk a;
-        };
+        var a = random.int(T) - 111;
         var x = powMod(T, a, even_component, number);
         if (x == 1 or x == number - 1) {
             continue;
@@ -65,7 +53,7 @@ pub fn getPrimeCandidate(random: Random, comptime T: type, accuracy: usize) T {
 test {
     var random = std.rand.DefaultPrng.init(1);
     var rand = random.random();
-    const expected = 150269890435615680026859507723321848049735320271671269071980913382807244513271045728538902280876622240790384674432102097273257564371128316697933387720011617626761112579396194019137383765017335487425990790766079480236356188286646846946504071847598106326643882492670459993843073480588306147058475997626802165279;
+    const expected = 27313240486808431272031427228077286115999947134248264955977532294773023934131383248957721508427481353771679509690618774398177736134786063971294459720426292247440925178719201299523358382182981277942567852631255378566506614053452474861913867183764193237557652997063641917666378394169723205398147258420492100571;
     const actual = getPrimeCandidate(rand, u1024, 5);
     try testing.expect(expected == actual);
 }

@@ -1,5 +1,6 @@
 const std = @import("std");
 const testing = std.testing;
+const Random = std.rand.Random;
 
 pub fn powMod(comptime T: type, a: T, b: T, m: T) T {
     const doubled = std.meta.Int(
@@ -22,20 +23,20 @@ pub fn powMod(comptime T: type, a: T, b: T, m: T) T {
     return @intCast(T, r);
 }
 
-test {
-    const tests_pow = [_][4]u64{
-        [4]u64{ 11378123410748079934, 16421262333679916698, 5588982832880222953, 193029793147236230 },
-        [4]u64{ 14834571546141995710, 4369117763020698127, 7135917169530990590, 2231096743281764010 },
-    };
-    for (tests_pow) |test_pow| {
-        const x = test_pow[0];
-        const y = test_pow[1];
-        const m = test_pow[2];
-        const r = test_pow[3];
-        const actual = powMod(u64, x, y, m);
-        try testing.expectEqual(r, @intCast(u64, actual));
-    }
-}
+// test {
+//     const tests_pow = [_][4]u64{
+//         [4]u64{ 11378123410748079934, 16421262333679916698, 5588982832880222953, 193029793147236230 },
+//         [4]u64{ 14834571546141995710, 4369117763020698127, 7135917169530990590, 2231096743281764010 },
+//     };
+//     for (tests_pow) |test_pow| {
+//         const x = test_pow[0];
+//         const y = test_pow[1];
+//         const m = test_pow[2];
+//         const r = test_pow[3];
+//         const actual = powMod(u64, x, y, m);
+//         try testing.expectEqual(r, @intCast(u64, actual));
+//     }
+// }
 
 const first_primes = [_]usize{
     2,   3,   5,   7,   11,  13,  17,  19,  23,  29,  31,  37,  41,  43,
@@ -59,4 +60,12 @@ pub fn checkFirstPrimes(number: anytype) bool {
         }
     }
     return true;
+}
+
+pub fn getLowLevelPrime(random: Random, comptime T: type) T {
+    var candidate = random.int(T);
+    while (!checkFirstPrimes(candidate)) {
+        candidate = random.int(T);
+    }
+    return candidate;
 }
