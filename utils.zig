@@ -2,25 +2,15 @@ const std = @import("std");
 const testing = std.testing;
 const Random = std.rand.Random;
 
-pub fn powMod(comptime T: type, a: T, b: T, m: T) T {
-    const doubled = std.meta.Int(
-        std.builtin.Signedness.unsigned,
-        @bitSizeOf(T) * 2,
-    );
-    var r: doubled = 1;
-    var x: doubled = a % m;
-    var y = b;
-
-    while (y > 0) {
-        var d = y % 2;
-        if (d == 1) {
-            r = (r * x) % m;
-        }
-        x = (x * x) % m;
-        y = y / 2;
-    }
-
-    return @intCast(T, r);
+pub fn powModOdd(a: anytype, b: anytype, m: anytype) !@TypeOf(m) {
+    const bits = @typeInfo(@TypeOf(m)).Int.bits;
+    const M = std.crypto.ff.Modulus(bits);
+    const I = std.crypto.ff.Uint(bits);
+    const m_ = try M.fromUint(try I.fromPrimitive(@TypeOf(m), m));
+    const a_ = m_.reduce(try I.fromPrimitive(@TypeOf(a), a));
+    const b_ = m_.reduce(try I.fromPrimitive(@TypeOf(a), b));
+    const res = try m_.pow(a_, b_);
+    return res.toPrimitive(@TypeOf(m));
 }
 
 // test {
@@ -33,8 +23,8 @@ pub fn powMod(comptime T: type, a: T, b: T, m: T) T {
 //         const y = test_pow[1];
 //         const m = test_pow[2];
 //         const r = test_pow[3];
-//         const actual = powMod(u64, x, y, m);
-//         try testing.expectEqual(r, @intCast(u64, actual));
+//         const actual = try powModOdd(x, y, m);
+//         try testing.expectEqual(r, @as(u64, @intCast(actual)));
 //     }
 // }
 
@@ -68,4 +58,10 @@ pub fn getLowLevelPrime(random: Random, comptime T: type) T {
         candidate = random.int(T);
     }
     return candidate;
+}
+
+pub fn intRangeAtMost(random: Random, comptime T: type, min: T, max: T) T {
+    // return random.intRangeAtMost(comptime T: type, at_least: T, at_most: T)
+    // comptime assert(bits <= 64); // TODO: workaround: LLVM ERROR: Unsupported library
+    return min + random.int(T) % (max - min + 1);
 }
