@@ -13,22 +13,38 @@ pub fn isMillerRabinPassed(
     number: T,
     accuracy: usize,
 ) !bool {
+    const bits = @typeInfo(T).Int.bits;
+    const M = std.crypto.ff.Modulus(bits);
+    const I = std.crypto.ff.Uint(bits);
+    const m_ = try M.fromUint(try I.fromPrimitive(T, number));
+
     var even_component: T = number - 1;
     var max_division_by_two: usize = 0;
     while (even_component & 1 == 0) {
         even_component >>= 1;
         max_division_by_two += 1;
     }
+    const even_component_ = m_.reduce(
+        try I.fromPrimitive(T, even_component),
+    );
+    const two_ = m_.reduce(
+        try I.fromPrimitive(usize, 2),
+    );
     for (0..accuracy) |_| {
         var a = intRangeAtMost(random, T, 2, number - 1);
-        var x = try powModOdd(a, even_component, number);
+        var a_ = m_.reduce(
+            try I.fromPrimitive(T, a),
+        );
+        var x_ = try m_.pow(a_, even_component_);
+        var x = try x_.toPrimitive(T);
         if (x == 1 or x == number - 1) {
             continue;
         }
 
         var i: usize = 0;
         while (i < max_division_by_two) {
-            x = try powModOdd(x, 2, number);
+            x_ = try m_.pow(x_, two_);
+            x = try x_.toPrimitive(T);
             if (x == number - 1) {
                 break;
             }

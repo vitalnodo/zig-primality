@@ -3,7 +3,6 @@ const testing = std.testing;
 const Random = std.rand.Random;
 const gcd = std.math.gcd;
 const utils = @import("utils.zig");
-const powModOdd = utils.powModOdd;
 const checkFirstPrimes = utils.checkFirstPrimes;
 const getLowLevelPrime = utils.getLowLevelPrime;
 const intRangeAtMost = utils.intRangeAtMost;
@@ -16,12 +15,19 @@ pub fn isFermatTestPassed(
 ) !bool {
     if (number == 1 or number == 4) return false;
     if (number == 2 or number == 3) return true;
+
+    const bits = @typeInfo(T).Int.bits;
+    const M = std.crypto.ff.Modulus(bits);
+    const I = std.crypto.ff.Uint(bits);
+    const m_ = try M.fromUint(try I.fromPrimitive(T, number));
+    const number_minus_one_ = m_.reduce(
+        try I.fromPrimitive(T, number - 1),
+    );
     for (0..accuracy) |_| {
         var rand = intRangeAtMost(random, T, 2, number - 1);
-        var a = powModOdd(rand, number - 1, number) catch |err| switch (err) {
-            error.EvenModulus => continue,
-            else => unreachable,
-        };
+        var rand_ = m_.reduce(try I.fromPrimitive(T, rand));
+        var a_ = try m_.pow(rand_, number_minus_one_);
+        var a = try a_.toPrimitive(T);
         if (gcd(a, number) == 1 and a != 1) {
             return false;
         }
