@@ -9,10 +9,10 @@ const intRangeAtMost = utils.intRangeAtMost;
 
 pub fn isMillerRabinPassed(
     random: Random,
-    comptime T: type,
-    number: T,
+    number: anytype,
     accuracy: usize,
 ) !bool {
+    const T = @TypeOf(number);
     const bits = @typeInfo(T).Int.bits;
     const M = std.crypto.ff.Modulus(bits);
     const I = std.crypto.ff.Uint(bits);
@@ -60,7 +60,6 @@ pub fn getPrimeCandidate(random: Random, comptime T: type, accuracy: usize) !T {
         var candidate = getLowLevelPrime(random, T);
         const passed = try isMillerRabinPassed(
             random,
-            T,
             candidate,
             accuracy,
         );
