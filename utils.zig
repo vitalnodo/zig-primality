@@ -1,6 +1,7 @@
 const std = @import("std");
 const testing = std.testing;
 const Random = std.rand.Random;
+const gcd = std.math.gcd;
 
 const first_primes = [_]usize{
     2,   3,   5,   7,   11,  13,  17,  19,  23,  29,  31,  37,  41,  43,
@@ -19,7 +20,7 @@ const first_primes = [_]usize{
 
 pub fn checkFirstPrimes(number: anytype) bool {
     for (first_primes) |prime| {
-        if (number % prime == 0) {
+        if (gcd(number, prime) != 1) {
             return false;
         }
     }
