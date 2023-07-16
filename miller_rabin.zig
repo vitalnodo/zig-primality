@@ -7,10 +7,17 @@ const checkFirstPrimes = utils.checkFirstPrimes;
 const getLowLevelPrime = utils.getLowLevelPrime;
 const intRangeAtMost = utils.intRangeAtMost;
 
+fn calcMillerRabinAccuracy(comptime T: type) usize {
+    if (@typeInfo(T).Int.bits <= 2048) {
+        return 64;
+    } else {
+        return 128;
+    }
+}
+
 pub fn isMillerRabinPassed(
     random: Random,
     number: anytype,
-    accuracy: usize,
 ) !bool {
     const T = @TypeOf(number);
     const bits = @typeInfo(T).Int.bits;
@@ -30,6 +37,7 @@ pub fn isMillerRabinPassed(
     const two_ = m_.reduce(
         try I.fromPrimitive(usize, 2),
     );
+    const accuracy = comptime calcMillerRabinAccuracy(T);
     for (0..accuracy) |_| {
         var a = intRangeAtMost(random, T, 2, number - 1);
         var a_ = m_.reduce(
@@ -55,13 +63,12 @@ pub fn isMillerRabinPassed(
     return true;
 }
 
-pub fn getPrimeCandidate(random: Random, comptime T: type, accuracy: usize) !T {
+pub fn getPrimeCandidate(random: Random, comptime T: type) !T {
     while (true) {
         var candidate = getLowLevelPrime(random, T);
         const passed = try isMillerRabinPassed(
             random,
             candidate,
-            accuracy,
         );
         if (passed) {
             return candidate;
@@ -75,6 +82,6 @@ test {
     var random = std.rand.DefaultPrng.init(1);
     var rand = random.random();
     const expected = 27313240486808431272031427228077286115999947134248264955977532294773023934131383248957721508427481353771679509690618774398177736134786063971294459720426292247440925178719201299523358382182981277942567852631255378566506614053452474861913867183764193237557652997063641917666378394169723205398147258420492100571;
-    const actual = try getPrimeCandidate(rand, u1024, 5);
+    const actual = try getPrimeCandidate(rand, u1024);
     try testing.expect(expected == actual);
 }
