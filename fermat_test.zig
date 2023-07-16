@@ -13,9 +13,6 @@ pub fn isFermatTestPassed(
     accuracy: usize,
 ) !bool {
     const T = @TypeOf(number);
-    if (number == 1 or number == 4) return false;
-    if (number == 2 or number == 3) return true;
-
     const bits = @typeInfo(T).Int.bits;
     const M = std.crypto.ff.Modulus(bits);
     const I = std.crypto.ff.Uint(bits);
@@ -27,8 +24,7 @@ pub fn isFermatTestPassed(
         var rand = intRangeAtMost(random, T, 2, number - 1);
         var rand_ = m_.reduce(try I.fromPrimitive(T, rand));
         var a_ = try m_.pow(rand_, number_minus_one_);
-        var a = try a_.toPrimitive(T);
-        if (gcd(a, number) == 1 and a != 1) {
+        if (!a_.eql(m_.one())) {
             return false;
         }
     }

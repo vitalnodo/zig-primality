@@ -26,6 +26,10 @@ pub fn isMillerRabinPassed(
     const m_ = try M.fromUint(try I.fromPrimitive(T, number));
 
     var even_component: T = number - 1;
+    const number_minus_one_ = m_.reduce(try I.fromPrimitive(
+        T,
+        even_component,
+    ));
     var max_division_by_two: usize = 0;
     while (even_component & 1 == 0) {
         even_component >>= 1;
@@ -34,26 +38,24 @@ pub fn isMillerRabinPassed(
     const even_component_ = m_.reduce(
         try I.fromPrimitive(T, even_component),
     );
-    const two_ = m_.reduce(
-        try I.fromPrimitive(usize, 2),
-    );
+    const two_ = &[1]u8{2};
     const accuracy = comptime calcMillerRabinAccuracy(T);
     for (0..accuracy) |_| {
-        var a = intRangeAtMost(random, T, 2, number - 1);
         var a_ = m_.reduce(
-            try I.fromPrimitive(T, a),
+            try I.fromPrimitive(
+                T,
+                intRangeAtMost(random, T, 2, number - 1),
+            ),
         );
         var x_ = try m_.pow(a_, even_component_);
-        var x = try x_.toPrimitive(T);
-        if (x == 1 or x == number - 1) {
+        if (x_.eql(m_.one()) or x_.eql(number_minus_one_)) {
             continue;
         }
 
         var i: usize = 0;
         while (i < max_division_by_two) {
-            x_ = try m_.pow(x_, two_);
-            x = try x_.toPrimitive(T);
-            if (x == number - 1) {
+            x_ = try m_.powWithEncodedExponent(x_, two_, .Big);
+            if (x_.eql(number_minus_one_)) {
                 break;
             }
             i += 1;
