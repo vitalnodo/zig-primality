@@ -2,7 +2,6 @@ const std = @import("std");
 const testing = std.testing;
 const Random = std.rand.Random;
 const utils = @import("utils.zig");
-const powModOdd = utils.powModOdd;
 const checkFirstPrimes = utils.checkFirstPrimes;
 const getLowLevelPrime = utils.getLowLevelPrime;
 const intRangeAtMost = utils.intRangeAtMost;
@@ -23,7 +22,7 @@ pub fn isMillerRabinPassed(
     const bits = @typeInfo(T).Int.bits;
     const M = std.crypto.ff.Modulus(bits);
     const I = std.crypto.ff.Uint(bits);
-    const m_ = try M.fromUint(try I.fromPrimitive(T, number));
+    const m_ = try M.fromPrimitive(T, number);
 
     var even_component: T = number - 1;
     const number_minus_one_ = m_.reduce(try I.fromPrimitive(
